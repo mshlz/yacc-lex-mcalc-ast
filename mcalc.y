@@ -31,7 +31,7 @@ void yyerror(char *str) {
 %%
 
 // Grammar
-// more bellow => bigger precedence
+// more bellow => greater precedence
 
 root:
     expr                     { ast_root = $$; } // copy ref of expr node to ast_root 
