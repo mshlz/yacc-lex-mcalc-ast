@@ -64,4 +64,49 @@ void ast_print_tree(ASTNode *node) {
     }
 }
 
+int ast_evaluate_calc(ASTNode *node) {
+    switch (node->kind) {
+    case PLUS:
+        return (ast_evaluate_calc(node->left) +
+                ast_evaluate_calc(node->right));
+        break;
+    case MINUS:
+        return (ast_evaluate_calc(node->left) -
+                ast_evaluate_calc(node->right));
+        break;
+    case MULTIPLY:
+        return (ast_evaluate_calc(node->left) *
+                ast_evaluate_calc(node->right));
+        break;
+    case DIVIDE:
+        return (ast_evaluate_calc(node->left) /
+                ast_evaluate_calc(node->right));
+        break;
+    case NUMBER:
+        return node->num;
+    default:
+        printf("Unknown token %d\n", node->kind);
+        return -1; // TODO: panic
+    }
+}
+
+int ast_evaluate(ASTNode *node, int *result) {
+    if (node == NULL) {
+        return -1;
+    }
+
+    switch (node->kind) {
+    case PLUS:
+    case MINUS:
+    case MULTIPLY:
+    case DIVIDE:
+    case NUMBER:
+        *result = ast_evaluate_calc(node);
+        return 0;
+    default:
+        printf("Unknown token %d\n", node->kind);
+        return -1; // TODO: panic?
+    }
+}
+
 #endif

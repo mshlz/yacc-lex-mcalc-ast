@@ -84,7 +84,16 @@ int main() {
     printf("Enter an expression: ");
     yyparse();
     printf("\n");
+    
     ast_print_tree(ast_root);
-    printf("\n");
-    return 0;
+    int result;
+    int ec = ast_evaluate(ast_root, &result);
+
+    if (ec) {
+        printf("FAILED TO EVALUATE AST!\n");
+        return 1;
+    } else {
+        printf("= %d\n", result);
+        return 0;
+    }
 }
