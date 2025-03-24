@@ -1,11 +1,15 @@
 %{
+
 #include "y.tab.h"
-void yyerror(char *s);
+
 %}
 
 %%
 
-[0-9]+   { yylval.num = atoi(yytext); return NUMBER; }
+[0-9]+   { 
+    yylval.num = atoi(yytext);
+    return NUMBER;
+}
 \+       { return PLUS; }
 \-       { return MINUS; }
 \*       { return MULTIPLY; }
@@ -16,4 +20,7 @@ void yyerror(char *s);
 .        { return 0; }  // Error for invalid characters
 
 %%
-int yywrap () {return 0;}
+
+int yywrap () { 
+    return 0; 
+}

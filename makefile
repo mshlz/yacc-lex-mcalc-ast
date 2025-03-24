@@ -17,3 +17,6 @@ run:
 
 clean:
 	rm *.app y.tab* lex.yy*
+
+test:
+	echo "1+2*3/4+2;" | make run

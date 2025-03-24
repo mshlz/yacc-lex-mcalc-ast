@@ -1,158 +1,90 @@
 %{
-void yyerror(char *str);
-int yylex();
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include "ast.h"
 
-typedef struct ASTNode {
-    int type;               // Token type (e.g., NUMBER, PLUS, etc.)
-    union {
-        int num;            // Used for NUMBER type
-        struct {
-            struct ASTNode* left;
-            struct ASTNode* right;
-        };
-    };
-} ASTNode;
-
+// Root node of the AST
 ASTNode *ast_root = NULL;
 
-// Function to create a new AST node
-ASTNode* create_node(int type) {
-    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = type;
-    node->left = NULL;
-    node->right = NULL;
-    return node;
+int yylex();
+
+void yyerror(char *str) {
+    fprintf(stderr, "Error: %s\n", str);
 }
+
 %}
 
 %union {
     struct ASTNode *node;
-    int num; 
+    int num;
 }
 
-%type <node> factor term expr root
+%type <node> root expr term factor
 
 %token <num> NUMBER
 %token PLUS MINUS MULTIPLY DIVIDE LPAREN RPAREN
 
+// %left means that operators of the same precedence will be evaluated from left to right.
+// 1 + 2 + 3 === (1 + 2) + 3
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
 
 %%
 
+// Grammar
+// more bellow => bigger precedence
+
 root:
     expr {
-        $$ =$1;
-        ast_root = $$;
+        ast_root = $$; // copy ref of expr node to ast_root
     }
 
-// Grammar rules with correct precedence handling
 expr:
-    expr PLUS term     { 
-        $$ = create_node(PLUS);
-        $$->left = $1;
-        $$->right = $3;
-        printf("PLUS (%p) + (%p) @ %p\n", $1, $3, $$);
+    expr PLUS term {
+        $$ = ast_create_node(PLUS);
+        $$->left = $1;                  // expr
+        $$->right = $3;                 // term
     }
-    | expr MINUS term  { 
-        $$ = create_node(MINUS);
-        $$->left = $1;
-        $$->right = $3;
-        printf("MINUS (%p) - (%p) @ %p\n", $1, $3, $$);
+    | expr MINUS term {
+        $$ = ast_create_node(MINUS);
+        $$->left = $1;                  // expr
+        $$->right = $3;                 // term
     }
-    | term { 
-        $$ = $1; 
-        printf("EXPR->term @ %p\n", ast_root);
-    }
+    | term
     ;
 
 term:
-    term MULTIPLY factor { 
-        $$ = create_node(MULTIPLY);
-        $$->left = $1;
-        $$->right = $3;
-        printf("MULTIPLY (%p) * (%p) @ %p\n", $1, $3, $$);
+    term MULTIPLY factor {
+        $$ = ast_create_node(MULTIPLY);
+        $$->left = $1;                  // term
+        $$->right = $3;                 // factor
     }
-    | term DIVIDE factor   { 
-        $$ = create_node(DIVIDE);
-        $$->left = $1;
-        $$->right = $3;
-        printf("DIVISION (%p) / (%p) @ %p\n", $1, $3, $$);
+    | term DIVIDE factor {
+        $$ = ast_create_node(DIVIDE);
+        $$->left = $1;                  // term
+        $$->right = $3;                 // factor
     }
-    | factor { $$=$1;
-    
-        printf("TERM->factor @ %p\n", $$);
-    
-    }
+    | factor
     ;
 
 factor:
-    NUMBER               { 
-        $$ = create_node(NUMBER);
-        $$->num = $1; 
-        printf("NUMBER(%d) @ %p\n", $1, $$);
+    NUMBER {
+        $$ = ast_create_node(NUMBER);
+        $$->num = $1;                   // integer
     }
-    | LPAREN expr RPAREN  { $$ = $2;
-    
-        printf("expr (expr) ... %p\n", $$);
+    | LPAREN expr RPAREN {
+        $$ = $2;                        // expr
     }
     ;
 
 %%
 
-void print_ast(ASTNode* node) {
-    if (node == NULL) {
-        return;
-    }
 
-    // Print the current node's type or value
-    switch (node->type) {
-        case PLUS:
-        print_ast(node->left);
-        printf("+ ");
-        print_ast(node->right);
-            break;
-        case MINUS:
-        print_ast(node->left);
-        printf("- ");
-        print_ast(node->right);
-            break;
-        case MULTIPLY:
-        printf("( ");
-        print_ast(node->left);
-        printf("* ");
-        print_ast(node->right);
-        printf(") ");
-            break;
-        case DIVIDE:
-        printf("( ");
-        print_ast(node->left);
-        printf("/ ");
-        print_ast(node->right);
-        printf(") ");
-            break;
-        case NUMBER:
-            printf("%d ", node->num);
-            break;
-        default:
-            printf("Unknown ");
-            break;
-    }
-}
 
 int main() {
     printf("Enter an expression: ");
     yyparse();
-    printf("after yyparse\n");
-    print_ast(ast_root); // Print the AST (assuming ast_root is the root node)
+    printf("\n");
+    ast_print_tree(ast_root);
+    printf("\n");
     return 0;
 }
-
-void yyerror(char *s) {
-    fprintf(stderr, "Error: %s\n", s);
-}
-    
