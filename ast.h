@@ -7,7 +7,7 @@
 #include "y.tab.h" // tokens
 
 typedef struct ASTNode {
-    int kind; // Token type (NUMBER, PLUS, MINUS, etc.)
+    int type; // Token type (NUMBER, PLUS, MINUS, etc.)
     union {
         int num; // Used for NUMBER type
         struct { // binary op
@@ -17,9 +17,9 @@ typedef struct ASTNode {
     };
 } ASTNode;
 
-ASTNode *ast_create_node(int kind) {
+ASTNode *ast_create_node(int type) {
     ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
-    node->kind = kind;
+    node->type = type;
     node->left = NULL;
     node->right = NULL;
     return node;
@@ -30,7 +30,7 @@ void ast_print_tree(ASTNode *node) {
         return;
     }
 
-    switch (node->kind) {
+    switch (node->type) {
     case PLUS:
         ast_print_tree(node->left);
         printf("+ ");
@@ -59,13 +59,13 @@ void ast_print_tree(ASTNode *node) {
         printf("%d ", node->num);
         break;
     default:
-        printf("Unknown token %d\n", node->kind);
+        printf("Unknown token %d\n", node->type);
         break;
     }
 }
 
 int ast_evaluate_calc(ASTNode *node) {
-    switch (node->kind) {
+    switch (node->type) {
     case PLUS:
         return (ast_evaluate_calc(node->left) +
                 ast_evaluate_calc(node->right));
@@ -85,7 +85,7 @@ int ast_evaluate_calc(ASTNode *node) {
     case NUMBER:
         return node->num;
     default:
-        printf("Unknown token %d\n", node->kind);
+        printf("Unknown token %d\n", node->type);
         return -1; // TODO: panic
     }
 }
@@ -95,7 +95,7 @@ int ast_evaluate(ASTNode *node, int *result) {
         return -1;
     }
 
-    switch (node->kind) {
+    switch (node->type) {
     case PLUS:
     case MINUS:
     case MULTIPLY:
@@ -104,7 +104,7 @@ int ast_evaluate(ASTNode *node, int *result) {
         *result = ast_evaluate_calc(node);
         return 0;
     default:
-        printf("Unknown token %d\n", node->kind);
+        printf("Unknown token %d\n", node->type);
         return -1; // TODO: panic?
     }
 }
