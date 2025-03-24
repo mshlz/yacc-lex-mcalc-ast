@@ -34,46 +34,23 @@ void yyerror(char *str) {
 // more bellow => bigger precedence
 
 root:
-    expr {
-        ast_root = $$; // copy ref of expr node to ast_root
-    }
+    expr                     { ast_root = $$; } // copy ref of expr node to ast_root 
 
 expr:
-    expr PLUS term {
-        $$ = ast_create_node(PLUS);
-        $$->left = $1;                  // expr
-        $$->right = $3;                 // term
-    }
-    | expr MINUS term {
-        $$ = ast_create_node(MINUS);
-        $$->left = $1;                  // expr
-        $$->right = $3;                 // term
-    }
+    expr PLUS term           { $$ = ast_create_binary_op(PLUS, $1, $3); }
+    | expr MINUS term        { $$ = ast_create_binary_op(MINUS, $1, $3); }
     | term
     ;
 
 term:
-    term MULTIPLY factor {
-        $$ = ast_create_node(MULTIPLY);
-        $$->left = $1;                  // term
-        $$->right = $3;                 // factor
-    }
-    | term DIVIDE factor {
-        $$ = ast_create_node(DIVIDE);
-        $$->left = $1;                  // term
-        $$->right = $3;                 // factor
-    }
+    term MULTIPLY factor     { $$ = ast_create_binary_op(MULTIPLY, $1, $3); }
+    | term DIVIDE factor     { $$ = ast_create_binary_op(DIVIDE, $1, $3); }
     | factor
     ;
 
 factor:
-    NUMBER {
-        $$ = ast_create_node(NUMBER);
-        $$->num = $1;                   // integer
-    }
-    | LPAREN expr RPAREN {
-        $$ = $2;                        // expr
-    }
+    NUMBER                   { $$ = ast_create_node(NUMBER); $$->num = $1; }
+    | LPAREN expr RPAREN     { $$ = $2; }
     ;
 
 %%

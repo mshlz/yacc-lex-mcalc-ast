@@ -20,8 +20,13 @@ typedef struct ASTNode {
 ASTNode *ast_create_node(int type) {
     ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
     node->type = type;
-    node->left = NULL;
-    node->right = NULL;
+    return node;
+}
+
+ASTNode *ast_create_binary_op(int type, ASTNode *left, ASTNode *right) {
+    ASTNode *node = ast_create_node(type);
+    node->left = left;
+    node->right = right;
     return node;
 }
 
